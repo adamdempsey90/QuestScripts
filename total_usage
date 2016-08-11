@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#######################################################################
+#   Display the usage information for the whole cluster.              #
+#   This script will output the NetID and the total number of         #
+#   Running, Idle, SystemHold, and Blocked jobs for every user.       #
+#   Additionally, we output the total usage of Running jobs for every #
+#   account.                                                          #
+#                                                                     #
+#   Author: Adam Dempsey                                              #
+#                                                                     #
+#######################################################################
+
+
+printf "\nUsage by Name\n\n"
+printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "NetID"  "Running"   " Idle" "Hold" "Blocked"
+printf "%.0s-" {1..45}
+printf "\n"
+
+touch $HOME/F124858573930202.txt $HOME/F124858573930204.txt 
+
+showq  > $HOME/F124858573930202.txt
+
+
+RUNNING=( $(cat $HOME/F124858573930202.txt | grep -E 'Running|Idle|SystemHold|Blocked' | awk '{print $2}' | sort | uniq) )
+
+for i in ${RUNNING[@]}
+do
+    TOTR=$( cat $HOME/F124858573930202.txt | grep $i | grep Running | awk '{s+=$4} END {print s}')
+    TOTI=$( cat $HOME/F124858573930202.txt | grep $i | grep Idle | awk '{s+=$4} END {print s}')
+    TOTH=$( cat $HOME/F124858573930202.txt | grep $i | grep SystemHold | awk '{s+=$4} END {print s}')
+    TOTB=$( cat $HOME/F124858573930202.txt | grep $i | grep Blocked | awk '{s+=$4} END {print s}')
+    
+    if [[  -z "${TOTR// }" ]]; then
+        TOTR=0
+    fi
+    if [[  -z "${TOTI// }" ]]; then
+        TOTI=0
+    fi
+    if [[  -z "${TOTH// }" ]]; then
+        TOTH=0
+    fi
+    if [[  -z "${TOTB// }" ]]; then
+        TOTB=0
+    fi
+
+    printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "$i" "$TOTR" "$TOTI" "$TOTH" "$TOTB" >> $HOME/F124858573930204.txt 
+
+
+done
+
+cat $HOME/F124858573930204.txt | sort -k2 -n -r
+
+rm $HOME/F124858573930204.txt 
+touch $HOME/F124858573930204.txt 
+
+showq -r | grep  'R' | grep -v "USERNAME" > $HOME/F124858573930202.txt
+ACCT=( $(cat $HOME/F124858573930202.txt | awk '{print $8}' | sort | uniq) )
+
+printf "\nUsage by Account\n\n"
+printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "NetID"  "Running"   " Idle" "Hold" "Blocked"
+printf "%.0s-" {1..45}
+printf "\n"
+for i in ${ACCT[@]}
+do
+    TOTR=$( cat $HOME/F124858573930202.txt | grep $i  | awk '{s+=$10} END {print s}')
+    
+    if [[  -z "${TOTR// }" ]]; then
+        TOTR=0
+    fi
+
+    printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "$i" "$TOTR" "N/A" "N/A" "N/A" >> $HOME/F124858573930204.txt 
+
+done
+
+cat $HOME/F124858573930204.txt | sort -k2 -n -r
+
+
+rm $HOME/F124858573930202.txt $HOME/F124858573930204.txt

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+################################################################
+#   Replace the NetIDs form showq for a given account with the #
+#   Last Names of the users.                                   #
+#   Uses a python script to do the replacements                #
+#   Arguments - Account Name                                   #
+#                                                              #
+#   Author: Adam Dempsey                                       #
+#                                                              #
+################################################################
+
+
+ACCT=$1
+
+module load utilities
+touch $HOME/F124858573930202.txt $HOME/F238845938202034.txt
+
+showq  -w acct=$ACCT $2 > $HOME/F124858573930202.txt
+
+grouplist $ACCT > $HOME/F238845938202034.txt
+
+python $HOME/QuestScripts/queviewer.py $HOME/F124858573930202.txt $HOME/F238845938202034.txt
+
+cat $HOME/F124858573930202.txt 
+rm $HOME/F124858573930202.txt $HOME/F238845938202034.txt
+
+
+

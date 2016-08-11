@@ -1,0 +1,66 @@
+#!/bin/bash
+
+#######################################################################
+#   Display the usage information for all users of an account         #
+#   This includes the NetID, Name (if available), and the             #
+#   total number of Running, Idle, SystemHold, and Blocked jobs.      #
+#   They are listed in descending order.                              #
+#   This script makes some temporary files (which are deleted) to the #
+#   current home directory.                                           #
+#   We also assume that the utilities module exists                   #
+#                                                                     #
+#   Arguments - Account Name                                          #
+#                                                                     #
+#   Author: Adam Dempsey                                              #
+#                                                                     #
+#######################################################################
+
+ACCT=$1
+
+module load utilities
+
+printf "\nUsage for %s\n\n" "$ACCT"
+printf "%10s\t%10s\t%5s\t%5s\n" "NetID"   "NAME"   "Running"   " Idle"
+printf "%.0s-" {1..45}
+printf "\n"
+
+touch $HOME/F124858573930202.txt $HOME/F238845938202034.txt $HOME/F238843848482023.txt
+
+showq  -w acct=$ACCT > $HOME/F124858573930202.txt
+
+grouplist $ACCT > $HOME/F238845938202034.txt
+
+RUNNING=( $(cat $HOME/F124858573930202.txt | grep -E 'Running|Idle' | awk '{print $2}' | sort | uniq) )
+NETID=( $(cat $HOME/F238845938202034.txt | awk '{print $1}' | sed 's/:$//') )
+NAMES=( $(cat $HOME/F238845938202034.txt | awk '{print $2}') )
+
+for i in ${RUNNING[@]}
+do
+    TOTR=$( cat $HOME/F124858573930202.txt | grep $i | grep Running | awk '{s+=$4} END {print s}')
+    TOTI=$( cat $HOME/F124858573930202.txt | grep $i | grep Idle | awk '{s+=$4} END {print s}')
+    
+    if [[  -z "${TOTR// }" ]]; then
+        TOTR=0
+    fi
+    if [[  -z "${TOTI// }" ]]; then
+        TOTI=0
+    fi
+
+    FOUND=0
+    for j in "${!NETID[@]}"; do
+        if [[ "${NETID[$j]}" = "$i" ]]; then
+            printf "%10s\t%10s\t%5s\t%5s\n" "$i" "${NAMES[$j]}" "$TOTR" "$TOTI" >>  $HOME/F238843848482023.txt
+            FOUND=1
+        fi
+    done
+    if [[ $FOUND -eq 0  ]]; then
+            printf "%10s\t%10s\t%5s\t%5s\n" "$i"  "N/A" "$TOTR" "$TOTI" >> $HOME/F238843848482023.txt
+
+    fi
+
+done
+
+
+cat $HOME/F238843848482023.txt | sort -k3 -n -r 
+
+rm $HOME/F124858573930202.txt $HOME/F238845938202034.txt $HOME/F238843848482023.txt
