@@ -24,6 +24,11 @@ showq  > $HOME/F124858573930202.txt
 
 RUNNING=( $(cat $HOME/F124858573930202.txt | grep -E 'Running|Idle|SystemHold|Blocked' | awk '{print $2}' | sort | uniq) )
 
+TOTRUNNING=0
+TOTIDLE=0
+TOTHOLD=0
+TOTBLOCK=0
+
 for i in ${RUNNING[@]}
 do
     TOTR=$( cat $HOME/F124858573930202.txt | grep $i | grep Running | awk '{s+=$4} END {print s}')
@@ -43,6 +48,11 @@ do
     if [[  -z "${TOTB// }" ]]; then
         TOTB=0
     fi
+
+    TOTRUNNING=$(($TOTRUNNING + $TOTR))
+    TOTIDLE=$(($TOTIDLE + $TOTI))
+    TOTHOLD=$(($TOTHOLD + $TOTH))
+    TOTBLOCK=$(($TOTBLOCK + $TOTB))
 
     printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "$i" "$TOTR" "$TOTI" "$TOTH" "$TOTB" >> $HOME/F124858573930204.txt 
 
@@ -74,6 +84,9 @@ do
 done
 
 cat $HOME/F124858573930204.txt | sort -k2 -n -r
+printf "%.0s-" {1..45}
+printf "\n"
+printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "TOTALS" "$TOTRUNNING" "$TOTIDLE" "$TOTHOLD" "$TOTBLOCK" 
 
 
 rm $HOME/F124858573930202.txt $HOME/F124858573930204.txt

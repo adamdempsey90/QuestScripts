@@ -34,6 +34,9 @@ RUNNING=( $(cat $HOME/F124858573930202.txt | grep -E 'Running|Idle' | awk '{prin
 NETID=( $(cat $HOME/F238845938202034.txt | awk '{print $1}' | sed 's/:$//') )
 NAMES=( $(cat $HOME/F238845938202034.txt | awk '{print $2}') )
 
+TOTRUNNING=0
+TOTIDLE=0
+
 for i in ${RUNNING[@]}
 do
     TOTR=$( cat $HOME/F124858573930202.txt | grep $i | grep Running | awk '{s+=$4} END {print s}')
@@ -46,6 +49,9 @@ do
         TOTI=0
     fi
 
+
+    TOTRUNNING=$(($TOTRUNNING+$TOTR))
+    TOTIDLE=$(($TOTIDLE+$TOTI))
     FOUND=0
     for j in "${!NETID[@]}"; do
         if [[ "${NETID[$j]}" = "$i" ]]; then
@@ -62,5 +68,8 @@ done
 
 
 cat $HOME/F238843848482023.txt | sort -k3 -n -r 
+printf "%.0s-" {1..45}
+printf "\n"
+printf "%10s\t%10s\t%5s\t%5s\n" "Totals" " " "$TOTRUNNING" "$TOTIDLE"
 
 rm $HOME/F124858573930202.txt $HOME/F238845938202034.txt $HOME/F238843848482023.txt
