@@ -14,16 +14,20 @@
 ACCT=$1
 
 module load utilities
-touch $HOME/F124858573930202.txt $HOME/F238845938202034.txt
 
-showq  -w acct=$ACCT $2 > $HOME/F124858573930202.txt
+FILE1=$(mktemp /tmp/showus.XXXXX)
+FILE2=$(mktemp /tmp/showus.XXXXX)
 
-grouplist $ACCT > $HOME/F238845938202034.txt
 
-python $HOME/QuestScripts/queviewer.py $HOME/F124858573930202.txt $HOME/F238845938202034.txt
+showq  -w acct=$ACCT $2 > $FILE1
 
-cat $HOME/F124858573930202.txt 
-rm $HOME/F124858573930202.txt $HOME/F238845938202034.txt
+grouplist $ACCT > $FILE2
+
+python $HOME/QuestScripts/queviewer.py $FILE1 $FILE2
+
+cat $FILE1 
+
+rm -f $FILE1 $FILE2
 
 
 
