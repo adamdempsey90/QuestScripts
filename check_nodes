@@ -1,0 +1,30 @@
+#!/bin/bash
+
+
+FILE1=$(mktemp /tmp/check_nodes.XXXXX)
+FILE2=$(mktemp /tmp/check_nodes.XXXXX)
+showus b1011 -r > $FILE1
+cat $FILE1 | grep JOBID | head -1
+cat $FILE1 | grep qgpu5
+cat $FILE1 | grep qgpu6
+
+rm -f $FILE1
+
+mynodes=(qgpu5001 qgpu5002 qgpu5003 qgpu5004 qgpu6006 qgpu6007 qgpu6008 qgpu6009 qgpu6010 qgpu6011 qgpu6012 qgpu6013 qgpu6014 qgpu6015)
+
+echo "Node Summary:"
+for i in "${mynodes[@]}"
+do
+    checknode $i > $FILE2
+    CPUUSED=$(cat $FILE2 | grep Utilized | awk -F"PROCS:" '{print $2}' | awk '{print $1}')
+    GPUUSED=$(cat $FILE2 | grep Utilized | awk -F"GPUS:" '{print $2}')
+    CPUAVAIL=$(cat $FILE2 | grep Configured | awk -F"PROCS:" '{print $2}' | awk '{print $1}')
+    GPUAVAIL=$(cat $FILE2 | grep Configured | awk -F"GPUS:" '{print $2}')
+    STATE=$(cat $FILE2 | grep State | awk '{print $1,$2}')
+    printf "%s\tCPU: %d/%d\tGPU: %d/%d\t%s\n" "$i"  "$CPUUSED" "$CPUAVAIL" "$GPUUSED" "$GPUAVAIL" "$STATE"
+done
+
+rm -f $FILE2
+
+###    echo $(checknode $i | grep Utilized | awk -F"GPUS:" '{print "GPUS:"$2}') > $FILE2
+
