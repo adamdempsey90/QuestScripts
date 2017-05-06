@@ -1,0 +1,31 @@
+#!/bin/bash
+
+########################################
+#   Display the total CPU hours used   #
+#   per account for the given user ID. #
+#                                      #
+#   Author: Adam Dempsey               # 
+#                                      # 
+########################################
+
+
+
+
+FILE1=$(mktemp /tmp/total_cpu_usage.XXXXXX)
+
+mam-list-usagerecords -u $1 --show Account,Charge > $FILE1
+
+ACCS=( $(awk 'NR > 2' $FILE1 | awk '{print $1}' | sort | uniq) )
+
+printf "\nTotal cpu usage for %s\n" $1 
+echo "---------------------------" 
+
+for a in "${ACCS[@]}"
+    do
+        HRS=$(cat $FILE1 | grep $a | awk '{sum += $2} END {print sum/3600}')
+        printf "%10s: %.2e CPU hours\n" $a $HRS
+    done
+
+
+rm -f "$FILE1" 
+
