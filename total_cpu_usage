@@ -18,7 +18,7 @@ mam-list-usagerecords -u $1 --show Account,Charge > $FILE1
 ACCS=( $(awk 'NR > 2' $FILE1 | awk '{print $1}' | sort | uniq) )
 
 printf "\nTotal cpu usage for %s\n" $1 
-echo "---------------------------" 
+echo "------------------------------" 
 
 for a in "${ACCS[@]}"
     do
@@ -26,6 +26,7 @@ for a in "${ACCS[@]}"
         printf "%10s: %.2e CPU hours\n" $a $HRS
     done
 
+echo "------------------------------" 
 
 rm -f "$FILE1" 
 
