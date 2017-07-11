@@ -13,8 +13,8 @@
 
 
 printf "\nUsage by Name\n\n"
-printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "NetID"  "Running"   " Idle" "Hold" "Blocked"
-printf "%.0s-" {1..45}
+printf "%10s\t%5s\t%5s\t%5s\t%5s\t%30s\n" "NetID"  "Running"   " Idle" "Hold" "Blocked" "NAME"
+printf "%.0s-" {1..78}
 printf "\n"
 
 
@@ -34,6 +34,7 @@ TOTBLOCK=0
 
 for i in ${RUNNING[@]}
 do
+    NAME=$( grep "$i:x" /etc/passwd | awk -F : '{print $5}' )
     TOTR=$( cat $FILE1 | grep $i | grep Running | awk '{s+=$4} END {print s}')
     TOTI=$( cat $FILE1 | grep $i | grep Idle | awk '{s+=$4} END {print s}')
     TOTH=$( cat $FILE1 | grep $i | grep SystemHold | awk '{s+=$4} END {print s}')
@@ -57,7 +58,7 @@ do
     TOTHOLD=$(($TOTHOLD + $TOTH))
     TOTBLOCK=$(($TOTBLOCK + $TOTB))
 
-    printf "%10s\t%5s\t%5s\t%5s\t%5s\n" "$i" "$TOTR" "$TOTI" "$TOTH" "$TOTB" >> $FILE2 
+    printf "%10s\t%5s\t%5s\t%5s\t%5s\t%30s\n" "$i" "$TOTR" "$TOTI" "$TOTH" "$TOTB" "$NAME" >> $FILE2 
 
 
 done
